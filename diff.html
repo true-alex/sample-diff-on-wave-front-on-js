@@ -1,0 +1,76 @@
+<html><head><title>DIFF on JS</title>
+	<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+</head><body>
+<div>
+<p>Поиск различий между двумя массивами при помощи алгоритма фронт волны. Демонстрация, строки разбиваются по символам и сравниваются
+<p>Finding differences between two arrays using the wavefront algorithm. Demo, strings are split by characters and compared 
+</div>
+<input id="line1" value="this is first string line"/><br/>
+<input id="line2" value="this is another string"/><br/>
+<input type="button" value="DIFF" onclick="diff((document.getElementById('line1').value).split(''),(document.getElementById('line2').value).split(''));"/><br/>
+<pre id="debug" style="font-family:monospace"></pre>
+<pre id="debug2" style="font-family:monospace"></pre>
+<script type="text/javascript">
+<!--
+function diff(v1,v2,comparator){
+	if ( typeof(comparator) !== 'function' ) {
+		comparator=function(a,b){return a===b;};
+	}
+	let stk=[];
+	let plotMaxX=v1.length+1;
+	let plotMaxY=v2.length+1;
+	let plot=[];
+	for(let i=0; i < plotMaxY; i++) {
+		plot.push(Array.apply(null, new Array(plotMaxX)).map((x)=>'.'));
+	}
+	plot[0][0]=0;
+	stk.unshift([0,0]);
+	while ( stk.length && plot[plotMaxY-1][plotMaxX-1] == '.' ) {
+		document.getElementById('debug').innerHTML='  |   '+v1.join(' ')+"\n--+---"+v1.map((x)=>'-').join('-')+"\n"+plot.map(function(l,i){return (i?v2[i-1]:' ')+' | '+l.join(' ');}).join("\n")+"\n\n[["+stk.map(function(l){return l.join();}).join('],[')+']]';
+		debugger;
+		let cl=stk.shift();
+		if ( cl[0] < plotMaxY && cl[1] < plotMaxX && comparator(v2[cl[0]],v1[cl[1]]) && plot[cl[0]+1][cl[1]+1] == '.') {
+			plot[cl[0]+1][cl[1]+1]='↘';// [\]
+			stk.unshift([cl[0]+1,cl[1]+1]);
+		}
+		if ( cl[1]+1 < plotMaxX && plot[cl[0]][cl[1]+1] == '.' ) {
+			plot[cl[0]][cl[1]+1]='→';//plot[cl[0]][cl[1]]+1;
+			stk.push([cl[0],cl[1]+1]);
+		}
+		if ( cl[0]+1 < plotMaxY && plot[cl[0]+1][cl[1]] == '.' ) {
+			plot[cl[0]+1][cl[1]]='↓';//plot[cl[0]][cl[1]]+1;
+			stk.push([cl[0]+1,cl[1]]);
+		}
+	}
+	document.getElementById('debug').innerHTML='  |   '+v1.join(' ')+"\n--+---"+v1.map((x)=>'-').join('-')+"\n"+plot.map(function(l,i){return (i?v2[i-1]:' ')+' | '+l.join(' ');}).join("\n")+"\n\n[["+stk.map(function(l){return l.join();}).join('],[')+']]';
+	debugger;
+	let res=[];
+	if ( plot[plotMaxY-1][plotMaxX-1] != '.' ) {
+		let y=plotMaxY-1;
+		let x=plotMaxX-1;
+		while ( x > 0 || y > 0 ) {
+			if ( x > 0 && y > 0 && plot[y][x] == '↘' ) {
+				plot[y][x] = '↖';
+				res.unshift(['store',v1[--x],v2[--y]]);
+			} else if ( x > 0 && plot[y][x] == '→' ) {
+				plot[y][x] = '←';
+				res.unshift(['remove',v1[--x],'']);
+			} else if ( y > 0 && plot[y][x] == '↓' ) {
+				plot[y][x] = '↑';
+				res.unshift(['insert','',v2[--y]]);
+			} else {
+				debugger;
+				return;
+			}
+		}
+	}
+	document.getElementById('debug').innerHTML='  |   '+v1.join(' ')+"\n--+---"+v1.map((x)=>'-').join('-')+"\n"+plot.map(function(l,i){return (i?v2[i-1]:' ')+' | '+l.join(' ').replace(/-/g,'←').replace(/\|/g,'↑').replace(/\\/g,'↖');}).join("\n")+"\n\n[["+stk.map(function(l){return l.join();}).join('],[')+']]';
+	document.getElementById('debug2').innerHTML=res.map((x)=>x.join()).join("\n");
+	return res;
+}
+//-->
+</script>
+</body></html>
